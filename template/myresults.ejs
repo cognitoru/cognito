@@ -1,0 +1,28 @@
+<% layout('./layout/page') -%>
+<% block('title', "Результаты") -%>
+<% var progressesCount = Object.keys(progresses).length; %>
+<h1>Мои результаты</h1>
+<table class="table table-striped table-hover ">
+            <thead>
+              <tr>
+                <th>Имя</th>
+                <th>Тема</th>
+                <th>Результаты</th>
+                <th>Оценка</th>
+                <th>Дата</th>
+              </tr>
+            </thead>
+            <tbody class="history">
+              <% if (Object.keys(progresses).length > 0) { %>
+              <% var p = 0;  %>
+              <% while (p != progressesCount) { %>
+                <% if (progresses[p].username == user.username) { %>
+                <tr id="username+key"><td class="username"><%=progresses[p].username%></td><td class="title"><%=progresses[p].unit%></td><td class="results"><span class="rights"><%=progresses[p].rights%></span>/<span class="count"><%=progresses[p].countTasks%></span></td><td class="mark-td"><%=progresses[p].mark%></td><td><%=progresses[p].date.getDate()%>.<%=progresses[p].date.getMonth()+1%>.<%=progresses[p].date.getFullYear()%> <%=progresses[p].date.getHours()%>:<%=progresses[p].date.getMinutes()%></td></tr>
+                <% } %>
+              <% p = p + 1 %>
+              <% }%>
+              <% } else { %>
+                <p class="text-mutted text-center">Выполняйте задания и здаесь будут храниться ваши результаты</p>
+              <% } %>
+            </tbody>
+          </table>

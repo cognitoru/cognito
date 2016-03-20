@@ -1,0 +1,236 @@
+html {
+    font-family: 'Arial';
+}
+.title-box {
+    /* border: 1px solid gray; */
+    padding: 5px;
+    margin-top: 10px;
+    background-color: #F1F1F1;
+}
+.navbar-inverse {
+    border-radius: 0;
+}
+.controls ul {
+    padding: 0;
+    margin: 0;
+}
+
+.controls li {
+    list-style-type: none;
+    display: inline-block;
+}
+
+.controls a {
+    color: #CECECE;
+    text-decoration: none;
+}
+.title-box:hover .controls a {
+    color: #7D7D7D;
+}
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #f5f5f5;
+    padding-top: 20px;
+}
+.floating-button:hover {
+    color: #A3D2F7;
+    text-decoration: none;
+}
+.floating-button {
+    width: 45px;
+    height: 45px;
+    display: block;
+    background: #2196F3;
+    color: #fff;
+    border-radius: 50%;
+    position: fixed;
+    right: 5%;
+    bottom: 50px;
+    padding: 4px 16px;
+    font-size: 21px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.61);
+}
+.mark {
+    display: block;
+    margin: 0 auto;
+    font-size: 91px;
+    /* color: #22AD22; */
+    background: none;
+    text-align: center;
+}
+.image-field > .glyphicon-ok-circle {
+    color: #18B348;
+    font-size: 120px;
+}
+.image-field > .glyphicon.glyphicon-remove-circle {
+    color: #B31818;
+    font-size: 120px;
+}
+.image-field {
+    text-align: center;
+}
+.mark-success {
+    color: #18B348;
+}
+.mark-danger {
+    color: #B31818;
+}
+/*
+.front-body .jumbotron {
+    background: rgba(0, 6, 14, 0.51);
+    border-radius: 0;
+    color: #fff;
+}
+
+.front-body .jumbotron h1 {
+    color: #F3F3F3;
+}
+
+.front-body .navbar-inverse {
+    background: rgba(0, 0, 0, 0.47);
+}
+
+.front-body .navbar-inverse a {
+    color: #fff !important;
+} */
+/*
+.panel-container {
+    margin-top: 0px;
+}
+.nav-pills.nav-stacked > li > a {
+    background: #3E3F3A;
+    border: none;
+    margin: 0;
+    color: grey;
+    border-radius: 0;
+}
+.nav-stacked>li+li {
+    margin-top: 0;
+}
+.nav-pills li.active>a, .nav-pills li>a:hover {
+    color: #fff;
+    background: #3E3F3A;
+}
+.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
+    background: #3E3F3A;
+    border: none;
+} */
+.admin-buttons {
+    margin-bottom: 50px;
+}
+
+.admin-buttons + h2 {
+    margin-bottom: 22px;
+}
+.large-header {
+    position: absolute;
+    overflow: hidden;
+    z-index: -1;
+}
+.form-control.has-success {
+    border-color: #2FAB2F;
+}
+input[type="radio"]:checked + span {
+    font-weight: bold;
+}
+.checkbox {
+    font-size: 17px;
+}
+.text-mutted {
+    color: gray;
+    font-size: 13px;
+}
+#history {
+    margin-top: 10px;
+}
+.front-body .container {
+    position: relative;
+}
+    .homepage-hero-module {
+    border-right: none;
+    border-left: none;
+    position: absolute;
+    width: 100%;
+    height: 100vh !important;
+}
+.no-video .video-container video,
+.touch .video-container video {
+    display: none;
+}
+.no-video .video-container .poster,
+.touch .video-container .poster {
+    display: block !important;
+}
+.video-container {
+    position: relative;
+    bottom: 0%;
+    left: 0%;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: transparent;
+}
+.video-container .poster img {
+    width: 100%;
+    bottom: 0;
+    position: absolute;
+}
+.video-container .filter {
+    z-index: 100;
+    position: absolute;
+    background: rgba(0, 0, 0, 0.4);
+    width: 100%;
+}
+.video-container video {
+    position: absolute;
+    z-index: 0;
+    bottom: 0;
+}
+.video-container video.fillWidth {
+    min-width: 100%;
+    min-height: 100%;
+    width: auto !important;
+    height: auto;
+}
+.jumbotron {
+    background: rgba(0, 0, 0, 0);
+    text-align: center;
+}
+.front-body .navbar-default {
+    background-color: transparent;
+}
+
+.front-body .navbar-default .navbar-nav>li>a {
+    color: #fff;
+}
+
+.front-body .navbar-default nav a {
+    color: #2C3E50;
+}
+.front-body .navbar-default a {
+    color: #fff;
+}
+.jumbotron > h1 {
+    color: rgb(255, 255, 255);
+}
+.jumbotron .btn-primary {
+    background: transparent;
+    border: 3px solid #fff;
+}
+ @media (min-aspect-ratio: 16/9) {
+     #trailer > video { height: 300%; top: -100%; }
+ }
+ @media (max-aspect-ratio: 16/9) {
+     #trailer > video { width: 300%; left: -100%; }
+ }
+ /* Если есть поддержка object-fit (Chrome/Chrome для Android, Safari в iOS 8 и Opera), используем его: */
+ @supports (object-fit: cover) {
+     #trailer > video {
+         top: 0; left: 0;
+         width: 100%; height: 100%;
+         object-fit: cover;
+     }
+ }

@@ -1,0 +1,173 @@
+<% layout('./layout/page') -%>
+<% block('title', tasks[0].title) -%>
+<%console.log(tasks)%>
+<% var taskString = tasks.toString() %>
+<% var i = 0; var taskCount = Object.keys(tasks).length; %>
+<input type="hidden" id="counter" name="counter" value="0">
+<div class="task-main text-center">
+  <div class="progress">
+    <div class="progress-bar progress-bar-success" style="width: 0%"></div>
+  </div>
+  <h1 class="task-title"><%=tasks[0].title %></h1>
+  <p class="task-content text-left"></p>
+  <script src="/socket.io/socket.io.js"></script>
+  <form class="form-horizontal addTask-form text-left" name="addTask-form">
+    <div class="col-md-3">
+      <div class="form-group" id="answerInput">
+        <div class="answer-filed">
+          <input autocomplete="off" type="text" name="answer" class="answer form-control" placeholder="Введите ответ" autofocus>
+        </div>
+        <input type="hidden" id="taskID" name="taskID" value="<%-tasks[0]._id %>">
+        <input type="hidden" name="username" value="<%-user.username %>">
+        <input type="hidden" id="key" name="key" value="">
+      </div>
+      <div class="form-group">
+          <button type="submit" class="btn btn-success">Вперед</button>
+    </div>
+  </form>
+</div>
+<script>
+  var counter = $('#counter').val();
+  var rights = 0;
+  <% var counter = 0 %>
+  var tasks = [
+    <% while (i != taskCount) { %>
+      {
+        _id: '<%=tasks[i]._id %>',
+        title: '<%=tasks[i].title %>',
+        content: '<%-tasks[i].content.replace(/\r|\n/g, '') %>',
+        unit: '<%=tasks[i].unit %>',
+        type: '<%=tasks[i].tasktype %>',
+        answers: '<%=tasks[i].answers %>'
+      },
+      <% i = i + 1 %>
+    <% }%>
+  ]
+  var CountTasks = Object.keys(tasks).length;
+  var socket = io.connect();
+  updateTask(tasks[counter]._id, tasks[counter].title, tasks[counter].content, tasks[counter].type, tasks[counter].answers);
+  function updateTask(id, title, content, type, answers) {
+      $('.task-title').text(title);
+      $('.task-content').html('');
+      $('.task-content').html(content);
+      $('#taskID').val(id);
+      $('.answer').val('');
+      if (type == 'radio') {
+        answers = answers.split(',');
+        console.log(typeof answers);
+        $('.answer-filed').html('');
+        var i = 0;
+        console.log(Object.keys(answers).length);
+        while (i < Object.keys(answers).length) {
+          $('.answer-filed').append('<div class="checkbox"><label><input type="radio" name="answer" value="'+ answers[i] + '"><span> '+ answers[i] + '</span></label></div>');
+          i+=1;
+        }
+      } else {
+        $('.answer-filed').html('');
+        $('.answer-filed').append('<input autocomplete="off" type="text" name="answer" class="answer form-control" placeholder="Введите ответ" autofocus>');
+      }
+  }
+  function writeResults(rights) {
+    $('.task-main').hide();
+    $('.task-main').html("<div class='image-field'></div><h2 class='test-results text-center'> Правильных ответов " + rights + " из " + CountTasks + "</h2><h2 class='text-center'>Оценка:</h2><span class='mark'></span><div class='task-buttons text-center btn-group' role='group'><a href='/test/" + tasks[0].unit + "' class='btn btn-primary'>Повторить</a><a href='/tasks' class='btn btn-primary'>К выбору темы</a></div>");
+    if (rights / CountTasks < 1) {
+      var mark = 3;
+      $('.mark').addClass('mark-danger');
+      $('.image-field').html("<i class='glyphicon glyphicon-remove-circle'></i>")
+    } 
+    if (rights / CountTasks > 0.5) {
+      var mark = 4;
+      $('.mark').removeClass('mark-danger');
+      $('.mark').addClass('mark-success');
+      $('.image-field').html("<i class='glyphicon glyphicon-ok-circle'></i>")
+    }
+    if (rights == CountTasks) {
+      var mark = 5;
+      $('.mark').addClass('mark-success');
+      $('.image-field').html("<i class='glyphicon glyphicon-ok-circle'></i>")
+    }
+    if (rights == 0) {
+      var mark = 2;
+      $('.mark').addClass('mark-danger');
+      $('.image-field').html("<i class='glyphicon glyphicon-remove-circle'></i>")
+    }
+    $('.mark').text(mark);
+    $('.task-main').show();
+    socket.emit('answerIt', { username: '<%=user.username %>', unit: tasks[0].unit, status: '1', count: CountTasks, key: key, mark: mark });
+    $.ajax({
+            url: "/panel",
+            method: "POST",
+            data: {username: '<%=user.username %>', unit: tasks[0].unit, rights: rights, countTasks: CountTasks, mark: mark},
+            statusCode: {
+              200: function() {
+                console.log('Saved');
+              },
+              403: function() {
+                console.log('Some error');
+              }
+            }
+      });
+  }
+  function generateKey(min, max) {
+    var rand = min - 0.5 + Math.random() * (max - min + 1)
+    rand = Math.round(rand);
+    return rand;
+  }
+  var key = generateKey(6, 1000);
+  $('#key').val(key);
+  $(document.forms['addTask-form']).on('submit', function() {
+    var form = $(this);
+    $('.error', form).html('');
+    $(":submit", form).button("loading");
+
+    $.ajax({
+      url: "/checkTask",
+      method: "POST",
+      data: form.serialize(),
+      complete: function() {
+        $(":submit", form).button("reset");
+      },
+      statusCode: {
+        200: function() {
+          counter = parseInt(counter) + 1;
+          socket.emit('answerIt', { username: '<%=user.username %>', unit: tasks[0].unit, status: '1', count: CountTasks, key: key, mark: 0 });
+          //$('#answerInput').removeClass('has-error');
+          //$('#answerInput').addClass('has-success');
+          $('#counter').val(parseInt(counter) + 1);
+          rights = rights + 1;
+          console.log(counter);
+          var typetask = typeof tasks[counter];
+          console.log(typetask)
+          //$('.progress-bar').css('width', counter/CountTasks*100 + '%');
+          $('.progress').append("<div class='progress-bar progress-bar-success' style='width: " + 1/CountTasks*100 + "%'></div>");
+          if (typetask == 'undefined') {
+            $('.progress').addClass('progress-striped active');
+            setTimeout( function() {
+            writeResults(rights);
+            }, 500);
+          } else {
+            updateTask(tasks[counter]._id, tasks[counter].title, tasks[counter].content, tasks[counter].type, tasks[counter].answers);
+          }
+        },
+        403: function(jqXHR) {
+          counter = parseInt(counter) + 1;
+          socket.emit('answerIt', { username: '<%=user.username %>', unit: tasks[0].unit, status: '0', count: CountTasks, key: key, mark: 0 });
+          //$('#answerInput').removeClass('has-success');
+          //$('#answerInput').addClass('has-error');
+          var typetask = typeof tasks[counter];
+          console.log(typetask)
+          $('.progress').append("<div class='progress-bar progress-bar-danger' style='width: " + 1/CountTasks*100 + "%'></div>");
+          if (typetask == 'undefined') {
+            $('.progress').addClass('progress-striped active');
+            setTimeout( function() {
+            writeResults(rights);
+            }, 500);
+          } else {
+            updateTask(tasks[counter]._id, tasks[counter].title, tasks[counter].content, tasks[counter].type, tasks[counter].answers);
+          }
+        }
+      }
+    });
+    return false;
+  });
+</script>

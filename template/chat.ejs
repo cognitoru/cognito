@@ -1,0 +1,82 @@
+<% layout('./layout/page') -%>
+<% block('title', "Чат") -%>
+
+<script src="/socket.io/socket.io.js"></script>
+<h1>Чат</h1>
+<div id="room">
+  <p>Онлайн: <span class="online_check"></span></p>
+  <ul class="list-unstyled"></ul>
+  <form>
+    <input disabled class="form-control" autocomplete="off" autofocus placeholder="Сообщение...">
+  </form>
+</div>
+
+<script>
+  var input = $('#room input');
+  var ul = $('#room ul');
+  var form = $('#room form');
+
+  var socket = io.connect('', {
+    reconnect: false
+  });
+  var onlineCheck = 0;
+  socket
+      .on('message', function(username, message) {
+        printMessage("<b>" + message + "</b> " + username);
+      })
+      .on('leave', function(username) {
+        printStatus(username + " вышел из чата");
+        onlineCheck = onlineCheck - 1;
+        $('.online_check').text(onlineCheck);
+        console.log(onlineCheck);
+
+      })
+      .on('join', function(username) {
+        printStatus(username + " вошёл в чат");
+      })
+      .on('connect', function() {
+        printStatus("соединение установлено");
+        form.on('submit', sendMessage);
+        input.prop('disabled', false);
+        onlineCheck = onlineCheck + 1;
+        $('.online_check').text(onlineCheck);
+        console.log(onlineCheck);
+      })
+      .on('disconnect', function() {
+        printStatus("соединение потеряно");
+        form.off('submit', sendMessage);
+        input.prop('disabled', true);
+        this.$emit('error');
+      })
+      .on('logout', function() {
+        location.href = "/";
+      })
+      .on('error', function(reason) {
+        if (reason == "handshake unauthorized") {
+          printStatus("вы вышли из сайта");
+        } else {
+          setTimeout(function() {
+            socket.socket.connect();
+          }, 5000);
+        }
+      });
+
+  function sendMessage() {
+    var text = input.val();
+    socket.emit('message', text, function() {
+      printMessage("<b> я </b> " + text);
+    });
+
+    input.val('');
+    return false;
+  }
+
+  function printStatus(status) {
+    $('<li>').append($('<i>').text(status)).appendTo(ul);
+  }
+
+  function printMessage(text) {
+    $('<li>').html(text).appendTo(ul);
+  }
+
+</script>

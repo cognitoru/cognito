@@ -1,0 +1,245 @@
+<% layout('./layout/page') -%>
+<% block('title', "Задания") -%>
+<% if (user.username == "admin") { %>
+<% console.log(units) %>
+<div class="pull-right">
+  <div class="btn-group" role="group">
+		<a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addTask">Добавить задание</a>
+    <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addUnit">Добавить тему</a>
+  </div>
+</div>
+<% if (Object.keys(units).length > 0) { %>
+<% var i = 0; var unitCount = Object.keys(units).length; %>
+<h2>Темы</h2>
+<% while (i != unitCount) { %>
+<div class="title-box">
+  <a><%=units[i].title%></a>
+  <% if (user.username == "admin") { %>
+  <!--  <div class="controls pull-right">
+      <ul>
+        <li><a href="#" class="glyphicon glyphicon-pencil" title="Редактировать"></a></li>
+        <li><a href="#" data-taskID="<%=units[i]._id%>" class="glyphicon glyphicon-remove remove-btn" title="Удалить"></a></li>
+      </ul>
+    </div> -->
+  <% } %> 
+</div>
+
+<% i = i + 1 %>
+<% }%>
+<% } else { %>
+<% } %>
+
+<% if (Object.keys(tasks).length > 0) { %>
+<% var i = 0; var taskCount = Object.keys(tasks).length; %>
+<h2>Задания</h2>
+<% while (i != taskCount) { %>
+<div class="title-box">
+	<a><%=tasks[i].title%> - <%=tasks[i].unit%></a>
+	<% if (user.username == "admin") { %>
+		<div class="controls pull-right">
+			<ul>
+				<li><a href="#" class="glyphicon glyphicon-pencil" title="Редактировать"></a></li>
+				<li><a href="#" data-taskID="<%=tasks[i]._id%>" class="glyphicon glyphicon-remove remove-btn" title="Удалить"></a></li>
+			</ul>
+		</div>
+	<% } %> 
+</div>
+<% i = i + 1 %>
+<% }%>
+<% } else { %>
+<h1>Нет доступных заданий</h1>
+<% } %>
+<!-- Modal -->
+<div class="modal fade bs-example-modal-lg" id="addTask" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+  	<form class="addTask-form" name="addTask-form">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	        <h4 class="modal-title" id="myModalLabel">Добавить задание</h4>
+	      </div>
+	      <div class="modal-body">
+	      <div class="form-group">
+    			<label>Название задания</label>
+    			<input name="title" type="text" class="form-control" placeholder="Введите название">
+  			</div>
+  			<div class="form-group">
+    			<label>Текст задания</label>
+    			<textarea name="content" type="text" class="form-control" placeholder="Введите текст задания"></textarea>
+  			</div>
+        <div class="form-group">
+          <label>Тема</label>
+          <select name="unit" class="form-control" style="display: inline-block; width: 50%;">
+            <% if (Object.keys(units).length > 0) { %>
+            <% var i = 0; var unitCount = Object.keys(units).length; %>
+            <h1>Темы</h1><span>Количество: <%=unitCount %></span>
+            <% while (i != unitCount) { %>
+              <option value="<%=units[i].alias%>"><%=units[i].title%></option>
+              <% i = i + 1 %>
+            <% } %> 
+            <% }%>
+          </select>
+        </div>
+  			<div class="form-group">
+    			<label>Правильный ответ</label>
+    			<input name="right" type="text" class="form-control" placeholder="Введите ответ на задание">
+  			</div>
+	      </div>
+	      <div class="modal-footer">
+	      	<div class="forErr"></div>
+	        <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+	        <button type="submit" class="btn btn-primary">Отправить</button>
+	      </div>
+	    </div>
+    </form>
+  </div>
+</div>
+<div class="modal fade bs-example-modal-lg" id="addUnit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <form class="addUnit-form" name="addUnit-form">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title" id="myModalLabel">Добавить тему</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Заголовок темы</label>
+            <input name="title" type="text" class="form-control" placeholder="Введите заголовок темы">
+          </div>
+          <div class="form-group">
+            <label>Псевдоним темы (латинскими буквами)</label>
+            <input name="alias" type="text" class="form-control" placeholder="Введите псевдоним">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="forErr"></div>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+          <button type="submit" class="btn btn-primary">Отправить</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<% } else { %>
+<div class="text-center">
+  <form class="startForm" name="startForm">
+    <h3>Выберите тему</h3>
+    <div class="form-group">
+      <select name="unit" class="form-control" style="display: inline-block; width: 50%;">
+            <% if (Object.keys(units).length > 0) { %>
+            <% var i = 0; var unitCount = Object.keys(units).length; %>
+            <h1>Темы</h1><span>Количество: <%=unitCount %></span>
+            <% while (i != unitCount) { %>
+              <option value="<%=units[i].alias%>"><%=units[i].title%></option>
+              <% i = i + 1 %>
+            <% } %> 
+            <% }%>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg">Начать</button>
+  </form>
+</div>
+<% } %>
+<script>
+  $(document.forms['addTask-form']).on('submit', function() {
+    var form = $(this);
+
+    $('.error', form).html('');
+    $(":submit", form).button("Загрузка");
+
+    $.ajax({
+      url: "/tasks",
+      method: "POST",
+      data: form.serialize(),
+      complete: function() {
+        $(":submit", form).button("reset");
+      },
+      statusCode: {
+        200: function(data) {
+          form.html("Задание добавлено").addClass('alert-success');
+          window.location.href = "/tasks";
+        },
+        403: function(jqXHR) {
+          $('.forErr').html("Проверьте введенные данные").addClass('alert-danger');
+        }
+      }
+    });
+    return false;
+  });
+  $(document.forms['addUnit-form']).on('submit', function() {
+    var form = $(this);
+
+    $('.error', form).html('');
+    $(":submit", form).button("loading");
+
+    $.ajax({
+      url: "/addUnit",
+      method: "POST",
+      data: form.serialize(),
+      complete: function() {
+        $(":submit", form).button("reset");
+      },
+      statusCode: {
+        200: function(data) {
+          form.html("Тема добавлена").addClass('alert-success');
+          window.location.href = "/tasks";
+        },
+        403: function(jqXHR) {
+          $('.forErr').html("Проверьте введенные данные").addClass('alert-danger');
+        }
+      }
+    });
+    return false;
+  });
+  $(document.forms['startForm']).on('submit', function() {
+    var form = $(this);
+
+    console.log(form.serialize());
+    var formBody = form.serialize();
+    var formElement = formBody.split('=');
+    console.log(formElement[1])
+    window.location.href = "/test/" + formElement[1];
+    return false;
+  });
+  $('.remove-btn').on('click', function(){
+  	var id = $(this).data("taskid");
+  	console.log(id);
+  	$.ajax({
+      url: "/removeTask",
+      method: "POST",
+      data: 'taskID='+id,
+      complete: function() {
+      	console.log("Lalalal")
+        $(this).parent().parent().parent().parent().css('display', 'none');
+        window.location.href = "/tasks";
+      },
+      statusCode: {
+        200: function() {
+          $(this).parent().parent().parent().parent().css('display', 'none');
+        },
+        403: function(jqXHR) {
+          $('.forErr').html("Проверьте введенные данные").addClass('alert-danger');
+        }
+      }
+    });
+  });
+</script>
+<script src="/js/tinymce.min.js"></script>
+<script>
+  tinymce.init({
+  selector: 'textarea',
+  language: "ru",
+  height: 200,
+  plugins: [
+    'advlist autolink lists link image charmap print preview anchor',
+    'searchreplace visualblocks code fullscreen',
+    'insertdatetime media table contextmenu paste code'
+  ],
+  toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+  content_css: [
+    '//fast.fonts.net/cssapi/e6dc9b99-64fe-4292-ad98-6974f93cd2a2.css',
+    '//www.tinymce.com/css/codepen.min.css'
+  ]
+});
+</script>

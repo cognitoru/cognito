@@ -1,0 +1,416 @@
+<% layout('./layout/page') -%>
+<% block('title', 'Панель управления'); -%>
+<% var progressesCount = Object.keys(progresses).length; %>
+<script src="/socket.io/socket.io.js"></script>
+<div class="row panel-container">
+	<div class="col-md-3 admin-sidebar">
+		<ul class="nav nav-pills nav-stacked nav-tabs">
+		  <li class="active"><a href="#results" data-toggle="tab">Результаты</a></li>
+		  <li><a href="#tasks" data-toggle="tab">Задания</a></li>
+		</ul>
+	</div>
+	<div class="col-md-9">
+		<div class="tab-content">
+		  <div class="tab-pane active fade in" id="results">
+		  	<h2>Результаты</h2>
+		  	<ul class="nav nav-tabs">
+			  <li class="active"><a href="#live" data-toggle="tab">Новые</a></li>
+			  <li><a href="#history" data-toggle="tab">История  <span class="badge"> <%=progressesCount%></span></a></li>
+			</ul>
+			<div class="tab-content">
+				<div class="tab-pane active messages" id="live">
+					<table class="table table-striped table-hover ">
+					  <thead>
+					    <tr>
+					      <th>Имя</th>
+					      <th>Тема</th>
+					      <th>Результаты</th>
+					      <th>Оценка</th>
+					    </tr>
+					  </thead>
+					  <tbody class="now-results">
+					  </tbody>
+					</table>
+				</div>
+				<div class="tab-pane messages" id="history">
+					
+					<table class="table table-striped table-hover ">
+					  <thead>
+					    <tr>
+					      <th>Имя</th>
+					      <th>Тема</th>
+					      <th>Результаты</th>
+					      <th>Оценка</th>
+					      <th>Дата</th>
+					    </tr>
+					  </thead>
+					  <tbody class="history">
+					  	<% if (Object.keys(progresses).length > 0) { %>
+					  		<div class='task-buttons text-center btn-group' role='group'><a href="#" id="purgeHistory" class="btn btn-primary">Очистить историю</a><a href="#" id="excelimport" class="btn btn-primary">Импорт Excel</a></div>
+							<% var p = 0;  %>
+							<% while (p != progressesCount) { %>
+								<tr id="username+key"><td class="username"><%=progresses[p].username%></td><td class="title"><%=progresses[p].unit%></td><td class="results"><span class="rights"><%=progresses[p].rights%></span>/<span class="count"><%=progresses[p].countTasks%></span></td><td class="mark-td"><%=progresses[p].mark%></td><td><%=progresses[p].date.getDate()%>.<%=progresses[p].date.getMonth()+1%>.<%=progresses[p].date.getFullYear()%> <%=progresses[p].date.getHours()%>:<%=progresses[p].date.getMinutes()%></td></tr>
+							<% p = p + 1 %>
+							<% }%>
+							<% } else { %>
+								<p class="text-mutted text-center">Здесь будут храниться старые результаты</p>
+							<% } %>
+					  </tbody>
+					</table>
+				</div>
+			</div>
+		  </div>
+		  <div class="tab-pane fade" id="tasks">
+		  	<% console.log(units) %>
+			<div class="pull-right admin-buttons">
+			  <div class="btn-group" role="group">
+					<a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addTask">Добавить задание</a>
+			    <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addUnit">Добавить тему</a>
+			  </div>
+			</div>
+			<% if (Object.keys(units).length > 0) { %>
+			<% var i = 0; var unitCount = Object.keys(units).length; %>
+			<h2>Темы</h2>
+			<% while (i != unitCount) { %>
+			<div class="title-box">
+			  <a><%=units[i].title%></a>
+			  <% if (user.username == "admin") { %>
+			  <!--  <div class="controls pull-right">
+			      <ul>
+			        <li><a href="#" class="glyphicon glyphicon-pencil" title="Редактировать"></a></li>
+			        <li><a href="#" data-taskID="<%=units[i]._id%>" class="glyphicon glyphicon-remove remove-btn" title="Удалить"></a></li>
+			      </ul>
+			    </div> -->
+			  <% } %> 
+			</div>
+
+			<% i = i + 1 %>
+			<% }%>
+			<% } else { %>
+			<% } %>
+
+			<% if (Object.keys(tasks).length > 0) { %>
+			<% var i = 0; var taskCount = Object.keys(tasks).length; %>
+			<h2>Задания</h2>
+			<% while (i != taskCount) { %>
+			<div class="title-box">
+				<a><%=tasks[i].title%> - <%=tasks[i].unit%></a>
+				<% if (user.username == "admin") { %>
+					<div class="controls pull-right">
+						<ul>
+							<li><a href="#" class="glyphicon glyphicon-pencil" title="Редактировать"></a></li>
+							<li><a href="#" data-taskID="<%=tasks[i]._id%>" class="glyphicon glyphicon-remove remove-btn" title="Удалить"></a></li>
+						</ul>
+					</div>
+				<% } %> 
+			</div>
+			<% i = i + 1 %>
+			<% }%>
+			<% } else { %>
+			<h1>Нет доступных заданий</h1>
+			<% } %>
+			<!-- Modal -->
+			<div class="modal fade bs-example-modal-lg" id="addTask" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			  <div class="modal-dialog modal-lg">
+			  	<form class="addTask-form" name="addTask-form">
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				        <h4 class="modal-title" id="myModalLabel">Добавить задание</h4>
+				      </div>
+				      <div class="modal-body">
+				      <div class="form-group">
+			    			<label>Название задания</label>
+			    			<input name="title" type="text" class="form-control" placeholder="Введите название">
+			  			</div>
+			  			<div class="form-group">
+			    			<label>Текст задания</label>
+			    			<textarea name="content" type="text" class="form-control" placeholder="Введите текст задания"></textarea>
+			  			</div>
+			        <div class="form-group">
+			          <label>Тема</label>
+			          <select name="unit" class="form-control" style="display: inline-block; width: 50%;">
+			            <% if (Object.keys(units).length > 0) { %>
+			            <% var i = 0; var unitCount = Object.keys(units).length; %>
+			            <h1>Темы</h1><span>Количество: <%=unitCount %></span>
+			            <% while (i != unitCount) { %>
+			              <option value="<%=units[i].alias%>"><%=units[i].title%></option>
+			              <% i = i + 1 %>
+			            <% } %> 
+			            <% }%>
+			          </select>
+			        </div>
+			        <div class="form-group">
+			          <label>Тип задания</label>
+			          <select name="tasktype" class="form-control task-type" style="display: inline-block; width: 50%;">
+			          	<option value="input">Текстовое поле</option>
+			            <option value="radio">Один правильный</option>
+			          </select>
+			        </div>
+			        <div>
+			  			<div class="form-group answers-list">
+			    			<label>Правильный ответ</label>
+			    			<input name="right" type="text" class="form-control" placeholder="Введите ответ на задание">
+			  			</div>
+			  		</div>
+				      </div>
+				      <div class="modal-footer">
+				      	<div class="forErr"></div>
+				        <button type="button" class="btn btn-danger" data-dismiss="modal">Закрыть</button>
+				        <button type="submit" class="btn btn-success">Отправить</button>
+				      </div>
+				    </div>
+			    </form>
+			  </div>
+			</div>
+			<div class="modal fade bs-example-modal-lg" id="addUnit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			  <div class="modal-dialog modal-lg">
+			    <form class="addUnit-form" name="addUnit-form">
+			      <div class="modal-content">
+			        <div class="modal-header">
+			          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			          <h4 class="modal-title" id="myModalLabel">Добавить тему</h4>
+			        </div>
+			        <div class="modal-body">
+			          <div class="form-group">
+			            <label>Заголовок темы</label>
+			            <input name="title" type="text" class="form-control" placeholder="Введите заголовок темы">
+			          </div>
+			          <div class="form-group">
+			            <label>Псевдоним темы (латинскими буквами)</label>
+			            <input name="alias" type="text" class="form-control" placeholder="Введите псевдоним">
+			          </div>
+			        </div>
+			        <div class="modal-footer">
+			          <div class="forErr"></div>
+			          <button type="button" class="btn btn-danger" data-dismiss="modal">Закрыть</button>
+			          <button type="submit" class="btn btn-success">Отправить</button>
+			        </div>
+			      </div>
+			    </form>
+			  </div>
+			</div>
+		  </div>
+		</div>
+	</div>
+</div>
+<script>
+	function postSuccessMessage(username, title, count, key, mark) {
+		$('.now-results').append('<tr id="'+ username.replace(/\s+/g, '')+key + '"><td class="username">' + username + '</td><td class="title">' + title + '</td><td class="results"><span class="rights">1</span>/<span class="count">' + count + '</span></td><td class="mark-td">' + mark + '</td></tr>'); 
+	}
+	function postDangerMessage(username, title, count) {
+		$('.now-results').append('<tr id="'+ username + '"><td class="username">' + username + '</td><td class="title">' + title + '</td><td class="results"><span class="rights">1</span>/<span class="count">' + count + '</span></td><td class="mark-td">5</td></tr>');  
+	}
+	function updateMessage(id, result, mark, username, unit, countTasks) {
+		if (result == '1') {
+			var forNow = $('#'+id+' > .results > .rights').text();
+			console.log('Mark'+mark)
+			if (mark > 0) {
+				$('#'+id+' > .mark-td').text(mark);
+				
+			} else {
+				$('#'+id+' > .results > .rights').text(parseInt(forNow) + 1);
+			}
+			//console.log('OK')
+		}
+	}  
+	var socket = io.connect();
+  		socket.on('successMessage', function(data) {
+			console.log(data);
+			if(!$("tr").is("#"+data.username.replace(/\s+/g, '')+data.key)) {
+				postSuccessMessage(data.username, data.unit, data.count, data.key, data.mark);
+				console.log(data.key);
+				socket.emit('getIt', { get: 'Get' });
+			} else {
+				updateMessage(data.username.replace(/\s+/g, '')+data.key, '1', data.mark, data.username, data.unit, data.count);
+				console.log('For Update')
+			}
+		});
+		socket.on('dangerMessage', function(data) {
+			
+		});
+</script>
+<script>
+
+  $(document.forms['addTask-form']).on('submit', function() {
+    var form = $(this);
+    var answers = [];
+    var lastID = parseInt($('.add-bottom:last').attr('id'));
+    var i = 0;
+    while (i < lastID) {
+    	answers[i] = $('#'+i).val();
+    	i+=1;
+    }
+    console.log(answers);
+    $('.error', form).html('');
+    $(":submit", form).button("Загрузка");
+    tinyMCE.activeEditor.getContent()
+    $.ajax({
+      url: "/tasks",
+      method: "POST",
+      data: form.serialize()+'&'+'answers='+answers,
+      complete: function() {
+        $(":submit", form).button("reset");
+      },
+      statusCode: {
+        200: function(data) {
+          form.html("Задание добавлено").addClass('alert-success');
+          window.location.href = "/panel";
+        },
+        403: function(jqXHR) {
+          $('.forErr').html("Проверьте введенные данные").addClass('alert-danger');
+        }
+      }
+    });
+    return false;
+  });
+  $(document.forms['addUnit-form']).on('submit', function() {
+    var form = $(this);
+
+    $('.error', form).html('');
+    $(":submit", form).button("loading");
+
+    $.ajax({
+      url: "/addUnit",
+      method: "POST",
+      data: form.serialize(),
+      complete: function() {
+        $(":submit", form).button("reset");
+      },
+      statusCode: {
+        200: function(data) {
+          form.html("Тема добавлена").addClass('alert-success');
+          window.location.href = "/betapanel";
+        },
+        403: function(jqXHR) {
+          $('.forErr').html("Проверьте введенные данные").addClass('alert-danger');
+        }
+      }
+    });
+    return false;
+  });
+  $(document.forms['startForm']).on('submit', function() {
+    var form = $(this);
+
+    console.log(form.serialize());
+    var formBody = form.serialize();
+    var formElement = formBody.split('=');
+    console.log(formElement[1])
+    window.location.href = "/test/" + formElement[1];
+    return false;
+  });
+  $('.remove-btn').on('click', function(){
+  	var id = $(this).data("taskid");
+  	console.log(id);
+  	$.ajax({
+      url: "/removeTask",
+      method: "POST",
+      data: 'taskID='+id,
+      complete: function() {
+      	console.log("Lalalal")
+        $(this).parent().parent().parent().parent().css('display', 'none');
+        window.location.href = "/panel";
+      },
+      statusCode: {
+        200: function() {
+          $(this).parent().parent().parent().parent().css('display', 'none');
+        },
+        403: function(jqXHR) {
+          $('.forErr').html("Проверьте введенные данные").addClass('alert-danger');
+        }
+      }
+    });
+  });
+  $('#purgeHistory').on('click', function() {
+  	$.ajax({
+      url: "/panel",
+      method: "POST",
+      data: 'type=purge',
+      statusCode: {
+        200: function() {
+          window.location.href = "/panel";
+        },
+        403: function(jqXHR) {
+          
+        }
+      }
+    });
+  });
+</script>
+<script src="/js/tinymce.min.js"></script>
+<script>
+  tinymce.init({
+  selector: 'textarea',
+  language: "ru",
+  height: 200,
+  menubar:false,
+  plugins: [
+    'advlist autolink lists link image charmap print preview anchor',
+    'searchreplace visualblocks code fullscreen',
+    'insertdatetime media table contextmenu paste imagetools'
+  ],
+ toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent",
+ imagetools_cors_hosts: ['www.tinymce.com', 'codepen.io'],
+  content_css: [
+    '//fast.fonts.net/cssapi/e6dc9b99-64fe-4292-ad98-6974f93cd2a2.css',
+    '//www.tinymce.com/css/codepen.min.css'],
+  setup: function (editor) {
+        editor.on('change', function () {
+            tinymce.triggerSave();
+        });
+    }
+});
+</script>
+<script>
+	$( ".task-type" ).change(function() {
+  		var taskType = $(this).val();
+  		console.log(taskType);
+  		if (taskType == "radio") {
+  			$('.answers-list').html("<input type='text' class='form-control add-bottom' id='0' placeholder='Введите вариант ответа'><br><input type='text' class='form-control add-bottom' id='1' placeholder='Введите вариант ответа'>");
+  		}
+  		if (taskType == "input") {
+  			$('.answers-list').html("<input name='right' type='text' class='form-control' placeholder='Введите ответ на задание'>");
+  		}
+  		if (taskType == "checkbox") {
+  			$('.answers-list').html("<input type='text' class='form-control add-bottom' id='0' placeholder='Введите вариант ответа'><br><input type='text' class='form-control add-bottom' id='1' placeholder='Введите вариант ответа'>");
+  		}
+	});
+	
+</script>
+<script >
+	$(document).on('focusin','.add-bottom:last', function(){
+		var hereid = parseInt($(this).attr('id'));
+		hereid = parseInt(hereid) + 1;
+		console.log(typeof hereid);
+		$('.answers-list').append("<br><input type='text' class='form-control add-bottom' id='"+ hereid +"' placeholder='Введите вариант ответа'>");
+		console.log('Ans: ' + $('.add-bottom').val());
+	});
+	$(document).on('dblclick','.add-bottom', function(){
+		$('.add-bottom').removeClass('has-success');
+		$(this).addClass('has-success');
+		$('.add-bottom').attr( "name", "" );
+		$(this ).attr( "name", "right" );
+	});
+
+</script>
+<script>
+	$('#excelimport').on('click', function() {
+		$.ajax({
+	      url: "/import",
+	      method: "POST",
+	      data: 'import=excel',
+	      statusCode: {
+	        200: function() {
+	          
+	        },
+	        403: function(jqXHR) {
+	          
+	        }
+	      }
+    	});
+	});
+</script>
+<script src="js/TweenLite.min.js"></script>
+	<script src="js/EasePack.min.js"></script>
+	<script src="js/rAF.js"></script>
+	<script src="js/demo-1.js"></script>
